@@ -66,18 +66,18 @@
   "homepage": "https://github.com/ColorlibHQ/gentelella#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.62.1",
-    "eslint": "^10.8.0",
+    "@playwright/test": "^1.63.0",
+    "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
-    "playwright": "^1.62.1",
-    "prettier": "^3.9.6",
-    "rollup-plugin-visualizer": "^7.0.1",
-    "sass": "^1.102.0",
-    "terser": "^5.49.2",
-    "vite": "^8.2.0"
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.7",
+    "rollup-plugin-visualizer": "^7.1.1",
+    "sass": "^1.104.1",
+    "terser": "^5.51.2",
+    "vite": "^8.3.0"
   },
   "dependencies": {
-    "datatables.net": "^3.0.1",
+    "datatables.net": "^3.0.4",
     "echarts": "^6.1.0",
     "leaflet": "^1.9.4"
   }
