@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000/production/index.html. Vite hot-reloads SCSS, JS, and HTML.
+Open http://localhost:9173/production/index.html. Vite hot-reloads SCSS, JS, and HTML.
 
 ## Before you open a PR
 
