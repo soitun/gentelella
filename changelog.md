@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.0] - 2026-09-16
+
+RTL layouts, a build-time sitemap and JSON-LD, the hooks the [Laravel edition](https://github.com/ColorlibHQ/gentelella-laravel) depends on, and a dependency refresh. Nothing is removed and no public API changed shape. The one behaviour change is under **Changed**: the demo form handler no longer swallows forms that post somewhere.
+
+**If you use the Laravel edition:** its installer asks for `gentelella@^4.1`, which until now resolved to 4.1.1. That version predates every hook below, so sign-in forms did nothing, server-side tables had no backend mode and the ⌘K palette listed demo pages that don't exist. 4.2.0 is the first release those installs get a working front end from, and `npm update gentelella` picks it up.
+
+### Added
+
+- **RTL support** ([#1005](https://github.com/ColorlibHQ/gentelella/pull/1005)). Set `<html dir="rtl">` and every layout, spacing and alignment rule flips for Arabic, Hebrew, Persian and Urdu. 151 direction-sensitive declarations became CSS logical properties, so there is no mirrored stylesheet to keep in sync. The new `_rtl.scss` only handles what has no logical form: `translateX` drawers and toggle knobs, the select arrow, and inline chevrons. A `dir` key in `localStorage` is applied by the pre-paint script alongside the theme, so a runtime switch never flashes the wrong way. LTR rendering is pixel-identical on the 12 pages compared before and after. Guide: [docs/rtl.md](docs/rtl.md).
+- **Server-rendered host support** ([#1009](https://github.com/ColorlibHQ/gentelella/pull/1009)). These let the template act as the front end of a Laravel or Django app. Each one is opt-in, and a page that doesn't use them behaves exactly as before.
+  - **Server-side DataTables.** `data-ajax="/url"` moves paging, search and ordering to the server (`data-ajax-method="POST"` sends the CSRF token from `<meta name="csrf-token">`). `[data-table-filter="name"]` controls in the same card are sent as `filters[name]` on every draw, including `from`/`to` ranges via `data-table-filter-part`, and `[data-table-filter-reset]` clears them. `data-export-url` delegates CSV export to the server. Without it no export button appears, because a client-side export would contain only the current page.
+  - **Shell config island.** Put `<script type="application/json" id="gentelella-shell-config">` in the page to supply your own `links` (`profile`, `settings`, `theme`, `help`, `lock`, `logout`), ⌘K palette `pages`, and bell and messages panel data (`notifications`, `messages`). When `links.logout` is set, sign-out POSTs with the CSRF token instead of navigating on a GET.
+  - **`<html data-sw="off">`** skips service worker registration, for hosts that bundle the entry without shipping `sw.js`.
+  - **`data-date-range-name="dates"`** on a date-range picker keeps hidden `dates[from]` / `dates[to]` inputs filled with ISO dates. The visible field is a read-only label and submits nothing a server can use.
+  - **`npm run export:php`** and **`npm run export:demo`** generate the Laravel edition's menu and icon config and its Blade demo views from `NAV`, `ICONS` and `production/*.html`, so the two editions can't drift apart.
+- **`sitemap.xml` generated at build time** ([#1007](https://github.com/ColorlibHQ/gentelella/pull/1007)). Opt in with `SITE_URL=https://example.com/ npm run build`. It lists the auto-discovered pages and leaves out auth, error and placeholder screens (47 of 58). Without `SITE_URL`, no sitemap is written, because it needs absolute URLs and a guessed host would be wrong.
+- **JSON-LD on the landing page** ([#1007](https://github.com/ColorlibHQ/gentelella/pull/1007)): `SoftwareApplication` plus `FAQPage`. The FAQ entries are parsed from the page's own `<details>` markup at build time, so they always match the visible answers, which Google requires.
+- **Syntax highlighting in the component playground** ([#1006](https://github.com/ColorlibHQ/gentelella/pull/1006)). The highlighter is a purpose-built 1.8 KB HTML highlighter, not Prism or Shiki, and ships as its own chunk that only `playground.html` requests. No other page's JS or CSS gained a byte. Live editing, Copy and Reset are unaffected, and the caret keeps its position while you type.
+- **`llms.txt`** at the site root ([#1003](https://github.com/ColorlibHQ/gentelella/pull/1003)), so AI assistants describe v4 correctly. The most common error is calling it a Bootstrap template.
+- **Simplified Chinese README** ([#1004](https://github.com/ColorlibHQ/gentelella/pull/1004)), cross-linked with the English one and including the framework ecosystem row.
+
+### Changed
+
+- **The demo form handler only fakes submits for the template's own demo forms** ([#1009](https://github.com/ColorlibHQ/gentelella/pull/1009)). It used to call `preventDefault()` on every form on the page. A form with an `action` other than `#` now submits normally. None of the 13 demo forms has one, so the template itself behaves the same. **If you added a form with an `action` and relied on the template to stop the submit**, add `data-demo-submit="false"` or handle the `submit` event yourself.
+- **Runtime dependency:** `datatables.net` 3.0.1 → **3.0.4**. It fixes column widths with Ajax data and `scrollX`, number rendering for negative values, and `^$` search patterns. The generated markup that `_datatable.scss` targets is unchanged. One visible difference: 3.0.4's column-width calculation gives a checkbox column about 20 px more than 3.0.1 did, taken from the other columns. `tables.html` is the only demo page with one. `autoWidth: false` would re-lay out every table, and a per-column `width` has no effect, so the new widths stay.
+- **Dev dependencies** bumped to latest:
+  - `@playwright/test`, `playwright`: 1.62.1 → 1.63.0
+  - `eslint`: 10.8.0 → 10.10.0
+  - `prettier`: 3.9.6 → 3.9.7
+  - `rollup-plugin-visualizer`: 7.0.1 → 7.1.1
+  - `sass`: 1.102.0 → 1.104.1 (compiled CSS is byte-identical)
+  - `terser`: 5.49.2 → 5.51.2
+  - `vite`: 8.2.0 → 8.3.0
+- `echarts` 6.1.0, `leaflet` 1.9.4, `@eslint/js` 10.0.1 and `eslint-config-prettier` 10.1.8 were already at their latest versions. Leaflet 2.0 is still an alpha, so it stays on 1.9.
+- **Build output changes from Vite 8.3.** Behaviour is unchanged; these only affect how the output is packaged:
+  - The `menus` and `modal` modules no longer get chunks of their own. Every page loaded both eagerly anyway, so they are now part of `main-v4`. That's two fewer requests per page and about 780 B less gzipped JS.
+  - Inline `<style>` blocks in pages are now minified (`playground.html` −1.0 KB, `theme.html` −0.3 KB).
+- **Node 24** in `.nvmrc`, up from Node 20, which reached end of life on 2026-04-30. `rollup-plugin-visualizer` already requires Node 22 or newer.
+- **GitHub Actions** in the Pages workflow moved to their current majors, all running on Node 24: `checkout` v7, `setup-node` v7, `configure-pages` v6, `upload-pages-artifact` v5, `deploy-pages` v5. No input changes were needed.
+- **Corrected claims:** the `package.json` description said 60 pages (there are 58), and the README and landing FAQ gave two different `node_modules` sizes (measured at ~165 MB).
+
+### Fixed
+
+- **The GitHub Pages root returned 404** ([#1001](https://github.com/ColorlibHQ/gentelella/pull/1001)). Every entry page lives under `production/`, so `dist/` had no `index.html`. The build now emits a relative redirect that resolves at `/`, `/gentelella/` and `/theme/gentelella/`, replacing the stub the R2 deploy script used to write itself.
+- **The README's theme generator and playground demo links returned 404** ([#1002](https://github.com/ColorlibHQ/gentelella/pull/1002)) because they were missing the `production/` segment.
+- **Playground code blocks rendered right-to-left under RTL** ([#1006](https://github.com/ColorlibHQ/gentelella/pull/1006)). They are now pinned to `direction: ltr`.
+- **`CONTRIBUTING.md` gave the wrong dev server port.** It said `localhost:3000`; the dev server runs on `9173`.
+
+### Security
+
+- **`nanoid`** (transitive, dev-only, via `vite` → `postcss`) 3.3.17 → 3.3.19. This resolves [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8), a high-severity advisory where a custom generator loops forever when called with size 0. `postcss` never calls it that way, and nothing from `nanoid` reaches the built output. `npm audit` reports 0 vulnerabilities.
+
+Verified: build succeeds with the same warning as before, `eslint src/` is clean, and `npm run smoke` passes on all 58 pages. Before/after screenshots of all 58 pages in light and dark themes match, except for the `tables.html` column widths described above.
+
 ## [4.1.1] - 2026-08-07
 
 Link fix. 4.1.0 was tagged and released on GitHub but never published to npm — this is the first 4.1.x on the registry, and it carries everything in 4.1.0 plus the fix below.

@@ -6,7 +6,7 @@ Gentelella v4 is a complete admin dashboard UI kit by Colorlib, distributed as p
 
 Facts that are commonly gotten wrong:
 
-- Current version is 4.1.1. License is MIT.
+- Current version is 4.2.0. License is MIT.
 - v4 has **no Bootstrap and no jQuery**. Gentelella v2 *was* Bootstrap-based, so older articles and answers describing it as a "Bootstrap admin template" describe v2, not v4. A migration guide is linked below.
 - There are exactly three runtime dependencies, all lazy-imported per page so pages that don't use them never load them: ECharts 6 (charts), DataTables.net 3 (tables), Leaflet 1.9 (maps).
 - Right-to-left layouts are supported via `<html dir="rtl">`, built on CSS logical properties.
