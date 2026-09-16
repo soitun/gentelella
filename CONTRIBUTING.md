@@ -7,7 +7,7 @@ Thanks for considering a contribution. This is a small, opinionated codebase —
 ```bash
 git clone https://github.com/ColorlibHQ/gentelella.git
 cd gentelella
-nvm use            # picks up .nvmrc (Node 20)
+nvm use            # picks up .nvmrc (Node 24)
 npm install
 npm run dev
 ```
